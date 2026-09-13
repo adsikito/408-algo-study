@@ -249,10 +249,20 @@ def strip_platform_syntax(text: str) -> str:
 def collect_files(target: Path):
     if target.is_file():
         return [target]
-    # 原样复制的课程方文件（2026-09-13 素材复制）不适用本工程排版规范，跳过扫描
-    skip = ("03_常规课程/C++课程资料/",)
+    # 原样复制的课程方文件（2026-09-13 素材复制）不适用本工程排版规范，跳过扫描：
+    # 只扫自撰笔记；逐字副本（素材章/课程资料）一律跳过
     files = sorted(p for p in target.rglob("*.md") if p.is_file())
-    return [p for p in files if not any(s in p.as_posix() for s in skip)]
+    out = []
+    for p in files:
+        rel = p.as_posix()
+        if rel.startswith("03_常规课程/C++课程资料/"):
+            continue
+        if rel.startswith("02_竞赛/01_算法专题/") and len(rel.split("/")) > 3:
+            continue
+        if rel.startswith("01_考研/408数据结构/") and len(rel.split("/")) > 2:
+            continue
+        out.append(p)
+    return out
 
 
 def main():
