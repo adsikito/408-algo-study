@@ -249,7 +249,10 @@ def strip_platform_syntax(text: str) -> str:
 def collect_files(target: Path):
     if target.is_file():
         return [target]
-    return sorted(p for p in target.rglob("*.md") if p.is_file())
+    # 原样复制的课程方文件（2026-09-13 素材复制）不适用本工程排版规范，跳过扫描
+    skip = ("03_常规课程/C++课程资料/",)
+    files = sorted(p for p in target.rglob("*.md") if p.is_file())
+    return [p for p in files if not any(s in p.as_posix() for s in skip)]
 
 
 def main():
