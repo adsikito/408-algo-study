@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>《17.1 位运算》学习笔记</title>
+<style>
+body{font-family:'Segoe UI','Microsoft YaHei',sans-serif;max-width:900px;margin:32px auto;padding:0 20px;line-height:1.7;color:#24292f}
+h1{border-bottom:3px solid #0969da;padding-bottom:10px;color:#0a3069}
+h2{border-bottom:1px solid #d0d7de;padding-bottom:6px;margin-top:36px;color:#0a3069}
+h3{margin-top:24px;color:#0a3069}
+table{border-collapse:collapse;margin:16px 0;width:100%;font-size:14px}
+th,td{border:1px solid #d0d7de;padding:6px 10px;text-align:left}
+th{background:#f0f6ff}
+tr:nth-child(even){background:#fafbfc}
+pre{background:#0d1117;color:#e6edf3;padding:14px;border-radius:8px;overflow-x:auto;font-size:13px;line-height:1.5}
+code{font-family:Consolas,'Courier New',monospace}
+p code,li code,td code{background:#eef1f4;color:#c7254e;padding:1px 5px;border-radius:4px}
+blockquote{border-left:4px solid #0969da;margin:12px 0;padding:2px 14px;color:#57606a;background:#f6f8fa}
+hr{border:none;border-top:2px dashed #d0d7de;margin:24px 0}
+</style>
+</head>
+<body>
+<h1>《17.1 位运算》学习笔记</h1>
+<blockquote>
+<p>教材：《C++基础篇》第17章 17.1 位运算（共27页）｜配套代码：code.cpp
+学习方式：讲 → 查 → 补 → 测 闭环｜整理日期：2026-08-27</p>
+</blockquote>
+<hr />
+<h2>0. 本章地图（教材目录，第3页）</h2>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>章节</th>
+<th>教材要求</th>
+<th>对应页码</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>位运算概述</td>
+<td>了解</td>
+<td>P4-5</td>
+</tr>
+<tr>
+<td>2</td>
+<td>按位取反 ~</td>
+<td>重点</td>
+<td>P6-8</td>
+</tr>
+<tr>
+<td>3</td>
+<td>按位与 &amp;</td>
+<td>重点</td>
+<td>P9-11</td>
+</tr>
+<tr>
+<td>4</td>
+<td>按位或 |</td>
+<td>重点</td>
+<td>P12-14</td>
+</tr>
+<tr>
+<td>5</td>
+<td>按位异或 ^</td>
+<td>重点</td>
+<td>P15-17</td>
+</tr>
+<tr>
+<td>6</td>
+<td>左移和右移</td>
+<td>重点</td>
+<td>P18-21</td>
+</tr>
+<tr>
+<td>7</td>
+<td>位运算赋值运算符</td>
+<td>熟悉</td>
+<td>P22</td>
+</tr>
+<tr>
+<td>-</td>
+<td>练习：异或交换</td>
+<td>实战</td>
+<td>P23-24</td>
+</tr>
+<tr>
+<td>-</td>
+<td>作业：输出二进制形式</td>
+<td>实战</td>
+<td>P26</td>
+</tr>
+<tr>
+<td>-</td>
+<td>下节课预告：综合案例4</td>
+<td>-</td>
+<td>P27</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>模块一（基础篇）</h2>
+<h3>1. 位运算概述【了解】（P4-5）</h3>
+<p><strong>一句话</strong>：位运算就是直接对整数在内存中的二进制位进行的运算。</p>
+<ul>
+<li>计算机的世界就是二进制世界，所有数据都以 0、1 两种状态存储在设备中。</li>
+<li>位运算直接操作底层二进制位，<strong>效率高、代码简洁</strong>，与指针并列 C/C++ 两大特色。</li>
+<li>算术运算（+、-、*、/）也可以看成"符号位共同参与"的位运算，但位运算比它们更贴近硬件。</li>
+</ul>
+<p><strong>六个位运算符总览（P5）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>运算符</th>
+<th>含义</th>
+<th>举例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&amp;</td>
+<td>按位与</td>
+<td>a &amp; b</td>
+</tr>
+<tr>
+<td>|</td>
+<td>按位或</td>
+<td>a | b</td>
+</tr>
+<tr>
+<td>^</td>
+<td>按位异或</td>
+<td>a ^ b</td>
+</tr>
+<tr>
+<td>~</td>
+<td>按位取反</td>
+<td>~a</td>
+</tr>
+<tr>
+<td>&lt;&lt;</td>
+<td>左移</td>
+<td>a &lt;&lt; 1</td>
+</tr>
+<tr>
+<td>&gt;&gt;</td>
+<td>右移</td>
+<td>b &gt;&gt; 2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>人话总结</strong>：位运算 = 直接拨动二进制开关。</p>
+<hr />
+<h3>2. 按位取反 ~【重点】（P6-8）</h3>
+<p><strong>① 是什么</strong>：对一个数的<strong>每一个二进制位</strong>取反：1 变 0，0 变 1（单目运算符）。</p>
+<p><strong>② 为什么</strong>：需要"整体翻转"或"构造掩码"时，~ 是最快的工具。最典型的用途：让某个数的最低位变成 0（a &amp; ~1），而不用关心这个数是几个字节。</p>
+<p><strong>③ 怎么用</strong>：</p>
+<p>运算规则表：</p>
+<table>
+<thead>
+<tr>
+<th>~</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>~0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>~1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>教材示例（P7）：</p>
+<pre><code> a  = 01111010
+~a  = 10000101
+</code></pre>
+<p>逐位对照：每一位都反过来。验证：0x7A = 122，~122 按补码 = -123，而 10000101 作为补码恰好是 -123，一致。</p>
+<p>配套代码：code.cpp 中没有 ~ 的示例，这里补一段（可直接运行）：</p>
+<pre><code class="language-cpp">int a = 0x7A;              // 01111010 = 122
+cout &lt;&lt; (~a) &lt;&lt; endl;      // 输出 -123（每一位取反）
+int x = 7;                 // 00000111
+cout &lt;&lt; (x &amp; ~1) &lt;&lt; endl;  // 输出 6：最低位被清零
+</code></pre>
+<p><strong>④ 注意事项</strong>：
+- ~ 的优先级比算术运算符、关系运算符、逻辑运算符<strong>都高</strong>（P8），所以 <code>a &amp; ~1</code> 不用给 ~1 加括号，先算 ~ 再算 &amp;。
+- ~1 的值不是"1 变 0 那么简单"，在 32 位 int 里 ~1 = 11111111 11111111 11111111 11111110（即 -2），最低位为 0、其余全为 1，所以它和任何数相与，只削掉最低位（P8 的用途原理）。</p>
+<p><strong>人话总结</strong>：~ 就是全体位大翻转。</p>
+<hr />
+<h2>模块二（逻辑篇）</h2>
+<h3>3. 按位与 &amp;【重点】（P9-11）</h3>
+<p><strong>① 是什么</strong>：两个数按二进制位对齐，<strong>两位同时为 1，结果才是 1</strong>，否则为 0。</p>
+<p><strong>② 为什么</strong>：它是"筛选器"——想留下哪些位，就用 1 去遮；想清掉哪些位，就用 0 去遮。清零、取位、判奇偶全靠它。</p>
+<p><strong>③ 怎么用</strong>：</p>
+<p>运算规则表：</p>
+<table>
+<thead>
+<tr>
+<th>&amp;</th>
+<th>0</th>
+<th>1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>0</strong></td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td><strong>1</strong></td>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>教材示例（P10）：</p>
+<pre><code>a  = 01111010
+b  = 10011000
+&amp;  = 00011000   ← 只有两位同时是1的地方留下1
+</code></pre>
+<p>验证：0x7A &amp; 0x98 = 0x18 = 24，正确。</p>
+<p><strong>三大用途（P11）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>做法</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. 清零</td>
+<td>与一个各位全 0 的数相与</td>
+<td>x &amp; 0 = 0</td>
+</tr>
+<tr>
+<td>2. 取指定位</td>
+<td>与"目标位为1、其余为0"的掩码相与</td>
+<td>X=10101110 取低4位：X &amp; 00001111 = 00001110</td>
+</tr>
+<tr>
+<td>3. 判断奇偶</td>
+<td>看最低位：0 偶 1 奇</td>
+<td>if ((a &amp; 1) == 0) 等价于 a % 2 == 0</td>
+</tr>
+</tbody>
+</table>
+<p>配套代码：code.cpp 第①段（被注释的奇偶判断）：</p>
+<pre><code class="language-cpp">int num = 130;
+if ((num &amp; 1)) {
+    cout &lt;&lt; &quot;奇数&quot; &lt;&lt; endl;
+} else {
+    cout &lt;&lt; &quot;偶数&quot; &lt;&lt; endl;
+}
+</code></pre>
+<p><strong>输出结果：偶数</strong>。推导：130 = 10000010，最低位是 0，所以 num &amp; 1 = 0，条件为假走 else。放开注释后运行即得此结果。注意源文件里中文是 GBK 乱码显示，语义就是"奇数/偶数"两支。</p>
+<p>与 %2 的效率对比：% 需要除法运算，&amp; 1 只需一次按位与，更贴近硬件、更快（现代编译器会把 %2 优化成 &amp;1，但位运算写法是底层原理的直接体现）。</p>
+<p><strong>④ 注意事项</strong>：
+- <strong>&amp; 和 &amp;&amp; 完全不同</strong>：&amp; 是按位与（逐位运算），&amp;&amp; 是逻辑与（整体真假判断），别混用。
+- <strong>优先级大坑</strong>：&amp; 的优先级<strong>低于</strong> ==！<code>if (num &amp; 1 == 0)</code> 实际是 <code>num &amp; (1 == 0)</code> = <code>num &amp; 0</code> = 恒 0，永远判"偶数"。必须写 <code>(num &amp; 1) == 0</code>。code.cpp 里写的是 <code>if ((num &amp; 1))</code>，把整体括起来，正确。</p>
+<p><strong>人话总结</strong>：&amp; 是遮罩，同 1 才透光。</p>
+<hr />
+<h3>4. 按位或 |【重点】（P12-14）</h3>
+<p><strong>① 是什么</strong>：两个数按位对齐，<strong>两位同时为 0，结果才是 0</strong>，否则为 1。</p>
+<p><strong>② 为什么</strong>：它是"开关打开器"——想把某些位强制变成 1（打开开关），用 | 最直接。</p>
+<p><strong>③ 怎么用</strong>：</p>
+<p>运算规则表：</p>
+<table>
+<thead>
+<tr>
+<th>|</th>
+<th>0</th>
+<th>1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>0</strong></td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td><strong>1</strong></td>
+<td>1</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>教材示例（P13）：</p>
+<pre><code>a  = 01111010
+b  = 10011000
+|  = 11111010   ← 只要有一个1就为1
+</code></pre>
+<p>验证：0x7A | 0x98 = 0xFA = 250，正确。</p>
+<p><strong>主要用途（P14）：把某些位设置为 1</strong>。
+比如将 X=10101110 的低 4 位全部置 1：找 Y=00001111（低 4 位为 1 其余为 0），X | Y = 10101111。</p>
+<p>配套代码：code.cpp 中没有 | 的独立示例，补一段：</p>
+<pre><code class="language-cpp">int x = 0xAE;              // 10101110
+cout &lt;&lt; (x | 0x0F) &lt;&lt; endl;// 10101111 = 175：低4位被置1
+int flags = 0;             // 00000000
+flags = flags | 0b0100;    // 把第2位&quot;打开&quot;→ 00000100
+</code></pre>
+<p><strong>④ 注意事项</strong>：
+- <strong>| 和 || 不同</strong>：| 是按位或，|| 是逻辑或。
+- 置 1 用 |、清 0 用 &amp;（配合 ~），两者配合才能自由操纵任意位。</p>
+<p><strong>人话总结</strong>：| 是开闸，有 1 就放行。</p>
+<hr />
+<h3>5. 按位异或 ^【重点】（P15-17）</h3>
+<p><strong>① 是什么</strong>：两个数按位对齐，<strong>相同为 0，不同为 1</strong>（"不同"才叫"异"或）。</p>
+<p><strong>② 为什么</strong>：它是"翻转器 + 无痕交换器"——对 1 异或的位被翻转，对 0 异或的位原样保留；还自带 a^a=0、a^0=a 两条黄金性质，能不借助临时变量交换两个数。</p>
+<p><strong>③ 怎么用</strong>：</p>
+<p>运算规则表：</p>
+<table>
+<thead>
+<tr>
+<th>^</th>
+<th>0</th>
+<th>1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>0</strong></td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td><strong>1</strong></td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>教材示例（P16）：</p>
+<pre><code>a  = 01111010
+b  = 10011000
+^  = 11100010   ← 不同的位是1，相同的位是0
+</code></pre>
+<p>验证：0x7A ^ 0x98 = 0xE2 = 226，正确。</p>
+<p><strong>三大用途（P17）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>做法</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. 翻转指定位</td>
+<td>目标位与 1 异或</td>
+<td>X=10101110 低4位翻转：X ^ 00001111 = 10100001</td>
+</tr>
+<tr>
+<td>2. 与 0 异或值不变</td>
+<td>a ^ 0 = a</td>
+<td>10101110 ^ 00000000 = 10101110</td>
+</tr>
+<tr>
+<td>3. 交换两个数</td>
+<td>三行异或，不用临时变量</td>
+<td>a^=b; b^=a; a^=b;</td>
+</tr>
+</tbody>
+</table>
+<p>配套代码：code.cpp 第④段（当前唯一未注释、正在生效的代码）：</p>
+<pre><code class="language-cpp">int num1 = 100, num2 = 200;
+cout &lt;&lt; &quot;num1 = &quot; &lt;&lt; num1 &lt;&lt; &quot;  num2 = &quot; &lt;&lt; num2 &lt;&lt; endl;
+num1 ^= num2;
+num2 ^= num1;
+num1 ^= num2;
+cout &lt;&lt; &quot;num1 = &quot; &lt;&lt; num1 &lt;&lt; &quot;  num2 = &quot; &lt;&lt; num2 &lt;&lt; endl;
+</code></pre>
+<p><strong>输出结果</strong>：</p>
+<pre><code>num1 = 100  num2 = 200
+num1 = 200  num2 = 100
+</code></pre>
+<p>逐行推导（用到交换律、结合律、a^a=0、a^0=a）：</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>运算</th>
+<th>结果</th>
+<th>推导</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>初始</td>
+<td>num1=100, num2=200</td>
+<td>-</td>
+<td>100=01100100，200=11001000</td>
+</tr>
+<tr>
+<td>第1行</td>
+<td>num1 ^= num2</td>
+<td>num1 = 100^200 = <strong>172</strong></td>
+<td>num1 变成"混合值"</td>
+</tr>
+<tr>
+<td>第2行</td>
+<td>num2 ^= num1</td>
+<td>num2 = 200 ^ 172 = <strong>100</strong></td>
+<td>200 ^ (100^200) = (200^200)^100 = 0^100 = 100</td>
+</tr>
+<tr>
+<td>第3行</td>
+<td>num1 ^= num2</td>
+<td>num1 = 172 ^ 100 = <strong>200</strong></td>
+<td>(100^200)^100 = (100^100)^200 = 0^200 = 200</td>
+</tr>
+</tbody>
+</table>
+<p><strong>④ 注意事项</strong>：
+- 异或满足<strong>交换律和结合律</strong>（这是三行交换能成立的数学基础）。
+- 异或交换<strong>只能用于整数</strong>，不能用于浮点数。
+- <strong>同址清零陷阱</strong>：如果两个变量指向同一块内存（如 swap(x, x) 或通过指针/引用传入同一变量），第一步 num1^=num1 后整块内存变 0，数据丢失。</p>
+<p><strong>人话总结</strong>：^ 不同为 1，还能空手换值。</p>
+<hr />
+<h3>6. &amp;、|、^ 三兄弟对比（P9-17 小结）</h3>
+<table>
+<thead>
+<tr>
+<th>运算符</th>
+<th>规则</th>
+<th>记忆口诀</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&amp; 按位与</td>
+<td>同 1 才 1</td>
+<td>全一才一</td>
+<td>清零、取指定位、判奇偶</td>
+</tr>
+<tr>
+<td>| 按位或</td>
+<td>同 0 才 0</td>
+<td>有 1 则 1</td>
+<td>把某些位置 1</td>
+</tr>
+<tr>
+<td>^ 按位异或</td>
+<td>相同 0 不同 1</td>
+<td>不同为一</td>
+<td>翻转指定位、交换两数、与 0 异或保值</td>
+</tr>
+</tbody>
+</table>
+<p>三者对照同一个例子：</p>
+<pre><code>a  = 01111010
+b  = 10011000
+a&amp;b= 00011000    ← 只保留公共的1
+a|b= 11111010    ← 合并所有的1
+a^b= 11100010    ← 剔除相同的位
+</code></pre>
+<hr />
+<h2>模块三（移位篇）</h2>
+<h3>7. 左移 &lt;&lt;【重点】（P18-19）</h3>
+<p><strong>① 是什么</strong>：各二进制位全部左移 n 位，<strong>左边丢弃、右边补 0</strong>。</p>
+<p><strong>② 为什么</strong>：二进制下左移一位就是乘 2，这是乘法里最快的实现；构造掩码（1 &lt;&lt; k）也全靠它。</p>
+<p><strong>③ 怎么用</strong>：</p>
+<p>教材示例（P18）：设 a=10101110，a&lt;&lt;2 → 左移 2 位、右补 0 → 10111000（左边 10 被丢弃）。</p>
+<p>教材示例（P19）：</p>
+<pre><code>00001011 &lt;&lt; 1 = 00010110   即 11 &lt;&lt; 1 = 22
+00001011 &lt;&lt; 2 = 00101100   即 11 &lt;&lt; 2 = 44
+</code></pre>
+<p>数学意义：m &lt;&lt; n 等价于 m × 2ⁿ。</p>
+<p>配套代码：code.cpp 第②段（被注释的左移）：</p>
+<pre><code class="language-cpp">int num = 11;
+cout &lt;&lt; (num &lt;&lt; 2) &lt;&lt; endl;   // 输出 44
+</code></pre>
+<p><strong>输出结果：44</strong>。推导：11 = 00001011，左移 2 位右补 0 → 00101100 = 44 = 11 × 4。注意 cout 后面是 (num &lt;&lt; 2)，括号不能省——&lt;&lt; 同时是流插入运算符，不括起来编译报错。</p>
+<p><strong>④ 注意事项</strong>：
+- 左移时<strong>被丢弃的高位若包含 1，结果溢出</strong>，不再等于乘 2ⁿ（P18 原话：若舍弃的高位不包含 1，才每左移一位相当于乘 2）。
+- 左移负数或移位位数 ≥ 类型位数是未定义/受限制行为，新手只对非负数用即可。</p>
+<p><strong>人话总结</strong>：左移 n 位 = 乘 2 的 n 次方。</p>
+<hr />
+<h3>8. 右移 &gt;&gt;【重点】（P20-21）</h3>
+<p><strong>① 是什么</strong>：各二进制位全部右移 n 位，<strong>右边丢弃</strong>；左边补什么看符号：<strong>正数左补 0，负数左补 1</strong>（符号位扩展）。</p>
+<p><strong>② 为什么</strong>：右移是左移的逆操作，除以 2ⁿ 的最快实现；取某个二进制位的经典套路 (num &gt;&gt; i) &amp; 1 也靠它。</p>
+<p><strong>③ 怎么用</strong>：</p>
+<p>教材示例（P21）：</p>
+<pre><code>00001011 &gt;&gt; 1 = 00000101   即 11 &gt;&gt; 1 = 5
+</code></pre>
+<p>数学意义：右移 n 位相当于除以 2ⁿ 的<strong>整除</strong>（小数部分直接丢弃）。11 &gt;&gt; 1 = 11/2 = 5.5 → 取 5。</p>
+<p>配套代码：code.cpp 第③段（被注释的右移）：</p>
+<pre><code class="language-cpp">int num = -11;
+cout &lt;&lt; (num &gt;&gt; 1) &lt;&lt; endl;   // 输出 -6
+</code></pre>
+<p><strong>输出结果：-6</strong>（在 MSVC/GCC/Clang 下均是）。推导（8 位示意，32 位同理）：</p>
+<pre><code>-11 的原码 = 10001011
+   反码    = 11110100（符号位不变，其余取反）
+   补码    = 11110101（反码+1，计算机里存的是这个）
+右移1位，负数左补1：11111010
+还原：这是负数的补码 → 减1得11111001 → 取反得00000110 = 6 → 加负号 = -6
+</code></pre>
+<p><strong>为什么不是 -5？</strong> C++ 的 <code>/</code> 是向零取整（-11/2 = -5），而右移是向负无穷取整（floor，-11/2 → -6）。右移对负数比整除"多丢 1"，两者不可混用。</p>
+<p><strong>④ 注意事项</strong>：
+- 右移不担心溢出，但<strong>是整除</strong>，小数部分直接丢弃（P21 原话）。
+- P21 注：此为<strong>带符号右移</strong>，高位空位补符号位，正补 0、负补 1。C++20 之前这属于实现定义行为，主流编译器都补符号位；C++20 起标准明确规定为算术右移。
+- 想让负数也按"无符号"逻辑右移，需转成 unsigned 再移。</p>
+<p><strong>人话总结</strong>：右移 n 位 = 除以 2ⁿ 取整，负数补 1。</p>
+<hr />
+<h3>9. 位运算赋值运算符【熟悉】（P22）</h3>
+<p><strong>① 是什么</strong>：位运算与赋值结合的复合运算符，共 5 个。</p>
+<p><strong>② 为什么</strong>：写法更短，和 +=、-= 一个道理。</p>
+<p><strong>③ 怎么用</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>复合运算符</th>
+<th>含义</th>
+<th>举例</th>
+<th>等同于</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&amp;=</td>
+<td>位与赋值</td>
+<td>a &amp;= b</td>
+<td>a = a &amp; b</td>
+</tr>
+<tr>
+<td>|=</td>
+<td>位或赋值</td>
+<td>a |= b</td>
+<td>a = a | b</td>
+</tr>
+<tr>
+<td>^=</td>
+<td>位异或赋值</td>
+<td>a ^= b</td>
+<td>a = a ^ b</td>
+</tr>
+<tr>
+<td>&lt;&lt;=</td>
+<td>左移赋值</td>
+<td>a &lt;&lt;= b</td>
+<td>a = a &lt;&lt; b</td>
+</tr>
+<tr>
+<td>&gt;&gt;=</td>
+<td>右移赋值</td>
+<td>a &gt;&gt;= b</td>
+<td>a = a &gt;&gt; b</td>
+</tr>
+</tbody>
+</table>
+<p>配套代码：code.cpp 第④段里的 <code>num1 ^= num2;</code> 就是<strong>位异或赋值</strong>，等同于 <code>num1 = num1 ^ num2;</code>。</p>
+<p><strong>④ 注意事项</strong>：复合运算符左边必须是可修改的变量；a &lt;&lt;= b 里 b 为负或超位宽是未定义行为。</p>
+<p><strong>人话总结</strong>：位运算赋值 = 算完塞回原变量。</p>
+<hr />
+<h2>模块四（实战篇）</h2>
+<h3>10. 课堂练习1：异或交换两个数（P23-24）</h3>
+<p><strong>题目（P23 原文）</strong>：输入两个整数 num1 和 num2，利用位运算交换它们的值。</p>
+<p><strong>思路分析</strong>：利用异或三条性质——交换律 (a^b = b^a)、结合律、a^a=0、a^0=a。目标是让一方先"记住"两数的混合信息，再分两次还原出对方。</p>
+<p><strong>参考代码（P24 原文）</strong>：</p>
+<pre><code class="language-cpp">int num1, num2;
+cin &gt;&gt; num1 &gt;&gt; num2;
+num1 ^= num2;      // num1 变成 num1^num2
+num2 ^= num1;      // num2 = num2^(num1^num2) = num1（原值）
+num1 ^= num2;      // num1 = (num1^num2)^num1 = num2（原值）
+cout &lt;&lt; num1 &lt;&lt; endl;
+cout &lt;&lt; num2 &lt;&lt; endl;
+</code></pre>
+<p><strong>逐步推导</strong>（以 100、200 为例）：</p>
+<ol>
+<li><code>num1 ^= num2</code> → num1 = 100^200 = 172（混合值）</li>
+<li><code>num2 ^= num1</code> → num2 = 200^172 = 200^(100^200) = (200^200)^100 = 0^100 = <strong>100</strong>（原 num1）</li>
+<li><code>num1 ^= num2</code> → num1 = 172^100 = (100^200)^100 = (100^100)^200 = 0^200 = <strong>200</strong>（原 num2）</li>
+</ol>
+<p>以 code.cpp 实际运行（100、200）验证：输出 num1 = 200  num2 = 100，交换成功。</p>
+<p><strong>注意事项</strong>：
+- 只适用于整数；浮点数没有按位异或语义。
+- 两个变量不能是<strong>同一块内存</strong>（同一个变量自我"交换"会直接清零：x^x=0）。
+- 实际工程更推荐 <code>swap(num1, num2)</code>，异或交换的价值在于理解异或性质。</p>
+<h3>11. 课堂练习2（作业）：输出一个整数的二进制形式（P26）</h3>
+<p><strong>题目（P26 原文）</strong>：利用位运算输出一个整数的二进制形式。输入 612，输出 <code>0000001001100100</code>。</p>
+<p><strong>思路分析</strong>：
+- 612 = 512+64+32+4 = 2⁹+2⁶+2⁵+2²，其二进制为 1001100100（10 位），按 16 位补齐前导 0 → 0000001001100100。
+- 核心套路：<strong>从高位到低位，逐位取出</strong>。第 i 位的值 = (num &gt;&gt; i) &amp; 1——先把第 i 位挪到最低位，再用 &amp; 1 截取。
+- i 从"总位数-1"遍历到 0，即可从最高位打印到最低位。</p>
+<p><strong>解法代码</strong>（按教材输出格式，16 位）：</p>
+<pre><code class="language-cpp">int num;
+cin &gt;&gt; num;
+for (int i = 15; i &gt;= 0; i--) {        // 从最高位(15)到最低位(0)
+    cout &lt;&lt; ((num &gt;&gt; i) &amp; 1);          // 取出第i位并输出
+}
+cout &lt;&lt; endl;
+</code></pre>
+<p>运行验证：输入 612 → 输出 <code>0000001001100100</code>，与作业要求一致。</p>
+<p><strong>扩展版</strong>（输出完整的 32 位，负数也正确）：</p>
+<pre><code class="language-cpp">int num;
+cin &gt;&gt; num;
+for (int i = 31; i &gt;= 0; i--) {
+    cout &lt;&lt; ((num &gt;&gt; i) &amp; 1);
+    if (i % 4 == 0 &amp;&amp; i) cout &lt;&lt; ' ';  // 每4位加空格便于阅读
+}
+cout &lt;&lt; endl;
+</code></pre>
+<p>输入 612 输出：<code>0000 0000 0000 0000 0000 0010 0110 0100</code>。负数如 -11 也能正确输出其补码形式（因为右移补符号位，(num&gt;&gt;i)&amp;1 取出的就是补码位）。</p>
+<p><strong>人话总结</strong>：右移到位，与 1 截取。</p>
+<hr />
+<h2>第三阶段·补：易错点速查卡</h2>
+<h3>五种位运算核心特性总表</h3>
+<table>
+<thead>
+<tr>
+<th>运算符</th>
+<th>运算规则</th>
+<th>典型用途</th>
+<th>数学意义</th>
+<th>易错点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&amp; 按位与</td>
+<td>同 1 才 1</td>
+<td>清零、取指定位、判奇偶 (x&amp;1)</td>
+<td>无直接对应</td>
+<td>优先级低于 ==，必须写 (x&amp;1)==0；与 &amp;&amp; 混淆</td>
+</tr>
+<tr>
+<td>| 按位或</td>
+<td>同 0 才 0</td>
+<td>把某些位置 1</td>
+<td>无直接对应</td>
+<td>与 || 混淆</td>
+</tr>
+<tr>
+<td>^ 按位异或</td>
+<td>同 0 异 1</td>
+<td>翻转指定位、交换两数、a^0=a</td>
+<td>无直接对应</td>
+<td>同址交换会清零；只限整数</td>
+</tr>
+<tr>
+<td>&lt;&lt; 左移</td>
+<td>左丢右补 0</td>
+<td>快速乘 2ⁿ、构造掩码 1&lt;&lt;k</td>
+<td>m&lt;&lt;n = m×2ⁿ</td>
+<td>丢弃的高位含 1 时溢出；cout 里要加括号</td>
+</tr>
+<tr>
+<td>&gt;&gt; 右移</td>
+<td>右丢，正补 0 负补 1</td>
+<td>快速除 2ⁿ、逐位取值 (x&gt;&gt;i)&amp;1</td>
+<td>m&gt;&gt;n = m÷2ⁿ 整除</td>
+<td>负数是 floor 整除（-11&gt;&gt;1=-6，不是-5）；与 / 的向零取整不同</td>
+</tr>
+</tbody>
+</table>
+<h3>最容易出错的 3 个点（第三阶段重点）</h3>
+<ol>
+<li><strong>优先级问题</strong>：~ 的优先级高于算术、关系、逻辑运算符（P8），所以 a &amp; ~1 里 ~1 先算；但 &amp;、^、| 的优先级<strong>低于</strong> ==，<code>num &amp; 1 == 0</code> 是大坑，等价于 <code>num &amp; (1==0)</code> = 0，必须写 <code>(num &amp; 1) == 0</code>。位移符 &lt;&lt; &gt;&gt; 在 cout 里与流插入 &lt;&lt; 同名，表达式必须加括号：<code>cout &lt;&lt; (num &lt;&lt; 2)</code>。</li>
+<li><strong>右移的符号位</strong>：正数左补 0、负数左补 1（符号位扩展）。主流编译器均如此，C++20 起标准明确；负数右移是向负无穷取整，-11 &gt;&gt; 1 = -6 而非 -5。</li>
+<li><strong>异或交换的陷阱</strong>：交换两数的三行异或，前提是 num1、num2 是<strong>不同的内存</strong>；通过指针/引用交换同一变量时第一步就 x^x=0，数据清零。</li>
+</ol>
+<hr />
+<h2>第四阶段·测：随堂测验（答案留空，先自己写）</h2>
+<p><strong>第 1 题（★ 位运算基础：写出表达式的值）</strong></p>
+<p>设 <code>int a = 12, b = 10;</code>（提示：12=1100，10=1010），写出下列各式的十进制结果：</p>
+<ol>
+<li>a &amp; b = ______</li>
+<li>a | b = ______</li>
+<li>a ^ b = ______</li>
+<li>~5 = ______</li>
+<li>7 &lt;&lt; 2 = ______</li>
+<li>-8 &gt;&gt; 1 = ______</li>
+</ol>
+<p><strong>第 2 题（★★ 位运算应用：判奇偶与取位）</strong></p>
+<ol>
+<li>不用 %，用一条位运算表达式判断 int x 的奇偶（结果为 1 表示奇数，0 表示偶数）：表达式 = ______</li>
+<li>取出 int x 的第 3 位（从第 0 位数起）的值：表达式 = ______</li>
+<li>把 int x 的最低位强制清零，其余位不变：表达式 = ______</li>
+</ol>
+<p><strong>第 3 题（★★★ 综合：移位与逻辑混合）</strong></p>
+<p>设 <code>unsigned char x = 0xD3;</code>（二进制 11010011）：</p>
+<ol>
+<li>将 x 的低 4 位清零、高 4 位保留：表达式 = ______（写出结果二进制）</li>
+<li>将 x 的最高位（第 7 位）翻转、其余位不变：表达式 = ______（写出结果二进制）</li>
+<li><code>(x &gt;&gt; 4) &amp; 0x0F</code> 的作用是什么？对 x=0xD3 结果是多少？______</li>
+</ol>
+<p><strong>第 4 题（★★★★ 编程题）</strong></p>
+<p>编写完整程序：输入一个整数（可能为负数），输出它的 32 位二进制补码形式，每 8 位用空格分隔。
+示例：输入 612，输出 <code>00000000 00000000 00000010 01100100</code>；输入 -1，输出 <code>11111111 11111111 11111111 11111111</code>。
+要求：只用位运算取位（禁止 bitset），并说明为什么负数也能输出正确结果。</p>
+<blockquote>
+<p>写完答案贴回来，我来逐题批改、讲解错因、给标准答案。</p>
+</blockquote>
+<hr />
+<h2>全章知识树</h2>
+<pre><code>位运算（17.1）
+├─ 概述【了解】
+│   ├─ 数据以二进制 0/1 存储，位运算直接操作二进制位
+│   ├─ 特点：效率高、代码简洁，与指针并列 C/C++ 特色
+│   └─ 六运算符：&amp; | ^ ~ &lt;&lt; &gt;&gt;
+├─ 按位取反 ~【重点】
+│   ├─ 规则：1变0，0变1（单目）
+│   ├─ 示例：~01111010 = 10000101
+│   ├─ 用途：a &amp; ~1 使最低位为 0（~1 = ...11111110）
+│   └─ 优先级：高于算术/关系/逻辑运算符
+├─ 按位与 &amp;【重点】
+│   ├─ 规则：同1才1（0&amp;0=0, 0&amp;1=0, 1&amp;0=0, 1&amp;1=1）
+│   ├─ 示例：01111010 &amp; 10011000 = 00011000
+│   ├─ 用途：①清零 ②取指定位 ③判奇偶 (a&amp;1)==0
+│   └─ 注意：&amp;≠&amp;&amp;；&amp; 优先级低于 ==，要加括号
+├─ 按位或 |【重点】
+│   ├─ 规则：同0才0（有1则1）
+│   ├─ 示例：01111010 | 10011000 = 11111010
+│   └─ 用途：把某些位设置为1（X|00001111 低4位置1）
+├─ 按位异或 ^【重点】
+│   ├─ 规则：相同0，不同1
+│   ├─ 示例：01111010 ^ 10011000 = 11100010
+│   ├─ 性质：交换律、结合律、a^a=0、a^0=a
+│   ├─ 用途：①翻转指定位 ②与0异或不变 ③三行交换两数
+│   └─ 陷阱：同址交换清零；仅限整数
+├─ 移位【重点】
+│   ├─ 左移 &lt;&lt;：左丢右补0，m&lt;&lt;n = m×2ⁿ，高位含1则溢出
+│   │    └─ 11&lt;&lt;1=22，11&lt;&lt;2=44
+│   └─ 右移 &gt;&gt;：右丢，正补0负补1，m&gt;&gt;n = m÷2ⁿ整除
+│        └─ 11&gt;&gt;1=5；-11&gt;&gt;1=-6（floor取整，非向零）
+├─ 位运算赋值【熟悉】&amp;= |= ^= &lt;&lt;= &gt;&gt;=
+│   └─ a ^= b 等同 a = a ^ b
+└─ 实战
+    ├─ 练习1：异或交换 num1^=num2; num2^=num1; num1^=num2;
+    └─ 练习2：(num&gt;&gt;i)&amp;1 从高位到低位拼出二进制（作业612）
+</code></pre>
+<hr />
+<h2>一页速查表</h2>
+<table>
+<thead>
+<tr>
+<th>知识点</th>
+<th>语法</th>
+<th>最小示例</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>取反</td>
+<td>~a</td>
+<td>~0x7A</td>
+<td>-123（01111010→10000101）</td>
+</tr>
+<tr>
+<td>按位与</td>
+<td>a &amp; b</td>
+<td>0x7A &amp; 0x98</td>
+<td>0x18（00011000）</td>
+</tr>
+<tr>
+<td>按位或</td>
+<td>a | b</td>
+<td>0x7A | 0x98</td>
+<td>0xFA（11111010）</td>
+</tr>
+<tr>
+<td>按位异或</td>
+<td>a ^ b</td>
+<td>0x7A ^ 0x98</td>
+<td>0xE2（11100010）</td>
+</tr>
+<tr>
+<td>左移</td>
+<td>a &lt;&lt; n</td>
+<td>11 &lt;&lt; 2</td>
+<td>44</td>
+</tr>
+<tr>
+<td>右移</td>
+<td>a &gt;&gt; n</td>
+<td>-11 &gt;&gt; 1</td>
+<td>-6（补符号位）</td>
+</tr>
+<tr>
+<td>复合赋值</td>
+<td>a ^= b</td>
+<td>num1 ^= num2</td>
+<td>等同 num1 = num1 ^ num2</td>
+</tr>
+<tr>
+<td>判奇偶</td>
+<td>(a &amp; 1) == 0</td>
+<td>130 &amp; 1</td>
+<td>0 → 偶数</td>
+</tr>
+<tr>
+<td>清最低位</td>
+<td>a &amp; ~1</td>
+<td>7 &amp; ~1</td>
+<td>6</td>
+</tr>
+<tr>
+<td>置位</td>
+<td>a | (1&lt;&lt;k)</td>
+<td>0 | (1&lt;&lt;2)</td>
+<td>4</td>
+</tr>
+<tr>
+<td>翻转位</td>
+<td>a ^ (1&lt;&lt;k)</td>
+<td>0 ^ (1&lt;&lt;7)</td>
+<td>128</td>
+</tr>
+<tr>
+<td>取第i位</td>
+<td>(a &gt;&gt; i) &amp; 1</td>
+<td>(612 &gt;&gt; 2) &amp; 1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>二进制输出</td>
+<td>for+右移+与1</td>
+<td>输入612（16位）</td>
+<td>0000001001100100</td>
+</tr>
+<tr>
+<td>异或交换</td>
+<td>三行 ^=</td>
+<td>100/200</td>
+<td>200/100</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>随身速记口诀（3 条，每条 ≤20 字）</h2>
+<ol>
+<li><strong>与取位清零，或置一，异或翻转交换。</strong>（16 字）</li>
+<li><strong>左移乘二右移除，丢掉的位回不来。</strong>（15 字）</li>
+<li><strong>判奇偶用与一，取位右移再与一。</strong>（15 字）</li>
+</ol>
+<hr />
+<h2>附：code.cpp 四段代码全解</h2>
+<table>
+<thead>
+<tr>
+<th>段</th>
+<th>代码（原样）</th>
+<th>状态</th>
+<th>输出结果</th>
+<th>讲解要点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>①</td>
+<td>int num=130; if ((num&amp;1)) cout&lt;&lt;"奇数"; else cout&lt;&lt;"偶数";</td>
+<td>被注释</td>
+<td>偶数</td>
+<td>130=10000010 末位0 → num&amp;1=0 → else 分支；演示按位与判奇偶，比 %2 快</td>
+</tr>
+<tr>
+<td>②</td>
+<td>int num=11; cout &lt;&lt; (num &lt;&lt; 2) &lt;&lt; endl;</td>
+<td>被注释</td>
+<td>44</td>
+<td>00001011 左移2位→00101100=44=11×4；演示左移乘2ⁿ；cout 中表达式必须加括号</td>
+</tr>
+<tr>
+<td>③</td>
+<td>int num=-11; cout &lt;&lt; (num &gt;&gt; 1) &lt;&lt; endl;</td>
+<td>被注释</td>
+<td>-6</td>
+<td>-11 补码 11110101，右移1位左补1→11111010=-6；演示负数符号位扩展、floor 整除</td>
+</tr>
+<tr>
+<td>④</td>
+<td>num1=100,num2=200; 三行 ^= 交换</td>
+<td>生效中</td>
+<td>num1=200 num2=100</td>
+<td>异或交换两数全推导见第10节；num1^=num2 即位异或赋值</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>附：页码覆盖自查表（第二阶段·查）</h2>
+<table>
+<thead>
+<tr>
+<th>页码</th>
+<th>内容</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1</td>
+<td>封面：位运算</td>
+<td>已讲（开篇）</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>复习：上一讲预处理/宏定义</td>
+<td>非本讲范围（略）</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>目录（7节+要求）</td>
+<td>已讲（第0节地图）</td>
+</tr>
+<tr>
+<td>P4-5</td>
+<td>位运算概述【了解】</td>
+<td>已讲</td>
+</tr>
+<tr>
+<td>P6-8</td>
+<td>按位取反【重点】</td>
+<td>已讲（四步法+补码示例）</td>
+</tr>
+<tr>
+<td>P9-11</td>
+<td>按位与【重点】</td>
+<td>已讲（含 code.cpp ①段）</td>
+</tr>
+<tr>
+<td>P12-14</td>
+<td>按位或【重点】</td>
+<td>已讲</td>
+</tr>
+<tr>
+<td>P15-17</td>
+<td>按位异或【重点】</td>
+<td>已讲（含 code.cpp ④段铺垫）</td>
+</tr>
+<tr>
+<td>P18-19</td>
+<td>左移【重点】</td>
+<td>已讲（含 code.cpp ②段）</td>
+</tr>
+<tr>
+<td>P20-21</td>
+<td>右移【重点】</td>
+<td>已讲（含 code.cpp ③段）</td>
+</tr>
+<tr>
+<td>P22</td>
+<td>位运算赋值运算符【熟悉】</td>
+<td>已讲</td>
+</tr>
+<tr>
+<td>P23-24</td>
+<td>练习：异或交换</td>
+<td>已讲（第10节）</td>
+</tr>
+<tr>
+<td>P25</td>
+<td>知识点总结</td>
+<td>已讲（全章树+速查表）</td>
+</tr>
+<tr>
+<td>P26</td>
+<td>作业：输出二进制形式</td>
+<td>已讲（第11节）</td>
+</tr>
+<tr>
+<td>P27</td>
+<td>下节课预告：综合案例4</td>
+<td>已记录（预告）</td>
+</tr>
+</tbody>
+</table>
+<p>重点章节核对：按位取反 ✓ 按位与 ✓ 按位或 ✓ 按位异或 ✓ 左移和右移 ✓ —— 六个重点全部按黄金四步法展开并配 5-15 行可运行代码。熟悉章节：位运算赋值 ✓。了解章节：概述 ✓（概括讲）。</p>
+<p>代码配齐核对：概述（总览表）、取反（补写示例+用途代码）、与（规则+code.cpp①）、或（补写示例）、异或（规则+code.cpp④）、左移（教材示例+code.cpp②）、右移（教材示例+code.cpp③）、赋值运算符（对照表）、练习1（P24 原代码+推导）、练习2（16位版+32位扩展版）——全覆盖。</p>
+<hr />
+<h2>下节课预告（P27）</h2>
+<p><strong>综合案例4</strong>——把前面章节的知识综合起来做完整小项目。位运算是它的前置知识之一，先把本笔记的 4 道测验题做扎实。</p>
+<hr>
+<p style="color:#57606a;font-size:13px">本文档由学习笔记 Markdown 自动生成 · 配套脚本：保存笔记.py</p>
+</body>
+</html>

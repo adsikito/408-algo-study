@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>异常处理学习笔记 · C++基础篇 21</title>
+<style>
+  :root{ --accent:#2563eb; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --codebg:#0f172a; }
+  *{ box-sizing:border-box; }
+  body{ font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif; background:#f1f5f9; color:var(--ink); margin:0; line-height:1.75; }
+  .wrap{ max-width:980px; margin:0 auto; padding:24px 20px 64px; }
+  .hero{ background:linear-gradient(135deg,#1e3a8a,#2563eb); color:#fff; border-radius:16px; padding:30px 34px; margin-bottom:22px; }
+  .hero h1{ margin:0 0 8px; font-size:26px; }
+  .hero p{ margin:4px 0; opacity:.92; font-size:14px; }
+  .hero .tags{ margin-top:12px; }
+  .tag{ display:inline-block; padding:2px 12px; border-radius:999px; font-size:12px; margin-right:8px; background:rgba(255,255,255,.18); }
+  .tag.hot{ background:#fecaca; color:#7f1d1d; }
+  .tag.mid{ background:#fde68a; color:#78350f; }
+  .tag.low{ background:#bbf7d0; color:#14532d; }
+  section{ background:#fff; border-radius:14px; padding:26px 30px; margin-bottom:20px; box-shadow:0 1px 3px rgba(15,23,42,.07); }
+  h2{ font-size:20px; margin:0 0 14px; border-left:5px solid var(--accent); padding-left:12px; }
+  h3{ font-size:16px; margin:22px 0 8px; color:#1d4ed8; }
+  p{ margin:8px 0; }
+  .muted{ color:var(--muted); font-size:13px; }
+  pre{ background:var(--codebg); color:#e2e8f0; padding:14px 18px; border-radius:10px; overflow-x:auto; font-size:13px; line-height:1.65; font-family:Consolas,"Courier New",monospace; }
+  code{ font-family:Consolas,"Courier New",monospace; }
+  p code, li code, td code{ background:#e2e8f0; padding:1px 6px; border-radius:4px; font-size:13px; }
+  table{ width:100%; border-collapse:collapse; margin:12px 0; }
+  th{ background:#eff6ff; text-align:left; }
+  th,td{ border:1px solid var(--line); padding:8px 12px; font-size:14px; vertical-align:top; }
+  .steps{ display:flex; flex-wrap:wrap; gap:12px; margin:14px 0; }
+  .step{ flex:1 1 170px; background:#f8fafc; border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .step b{ display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:var(--accent); color:#fff; font-size:13px; margin-right:8px; }
+  .step .t{ font-weight:700; font-size:14px; }
+  .step .d{ font-size:13px; color:var(--muted); margin-top:4px; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:720px){ .grid2{ grid-template-columns:1fr; } .hero{ padding:22px; } }
+  .card{ background:#f8fafc; border:1px solid var(--line); border-radius:10px; padding:14px 18px; margin:10px 0; }
+  .trap{ border-left:4px solid #dc2626; background:#fef2f2; border-radius:0 10px 10px 0; padding:12px 18px; margin:12px 0; }
+  .tip{ border-left:4px solid #16a34a; background:#f0fdf4; border-radius:0 10px 10px 0; padding:12px 18px; margin:12px 0; }
+  .blank{ border:2px dashed #94a3b8; border-radius:10px; min-height:70px; padding:12px 16px; color:#94a3b8; font-size:13px; margin:10px 0 22px; }
+  .q{ background:#f8fafc; border:1px solid var(--line); border-radius:10px; padding:14px 18px; margin:14px 0; }
+  .q .lv{ float:right; color:#b45309; font-size:13px; }
+  .mnemos{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:14px 0; }
+  @media (max-width:720px){ .mnemos{ grid-template-columns:1fr; } }
+  .mnemo{ background:linear-gradient(160deg,#eff6ff,#fff); border:1px solid #bfdbfe; border-radius:12px; padding:16px; font-size:14px; font-weight:600; }
+  .mnemo small{ display:block; font-weight:400; color:var(--muted); margin-top:6px; font-size:12px; }
+  .sum{ background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:8px 14px; display:inline-block; font-size:13px; margin:6px 0; }
+  footer{ text-align:center; color:var(--muted); font-size:12px; padding:18px 0 0; }
+  .toc{ columns:2; column-gap:32px; font-size:14px; }
+  .toc a{ color:var(--accent); text-decoration:none; }
+  @media (max-width:720px){ .toc{ columns:1; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>C++ 异常处理 · 学习笔记</h1>
+  <p>教材：《21 异常处理》课件（34页）｜配套代码：mycode.h · mycode.cpp · Test002.cpp</p>
+  <p>闭环流程：讲（黄金四步法）→ 查（页码/重点/代码三查）→ 补（注释代码 + 两大陷阱）→ 测（4 道题）</p>
+  <div class="tags">
+    <span class="tag low">概述 · 了解</span><span class="tag mid">标准异常 · 熟悉</span>
+    <span class="tag hot">try/catch · 重点</span><span class="tag hot">throw · 重点</span>
+    <span class="tag hot">catch · 重点</span><span class="tag hot">自定义异常 · 重点</span>
+    <span class="tag mid">嵌套类/局部类 · 熟悉</span>
+  </div>
+</header>
+
+<section>
+  <h2>目录</h2>
+  <div class="toc">
+    <div>1. <a href="#mech">异常处理运行机制总览</a></div>
+    <div>2. <a href="#m1">模块一：概述 + 标准异常</a></div>
+    <div>3. <a href="#m2">模块二：try/catch · throw · catch</a></div>
+    <div>4. <a href="#m3">模块三：自定义异常 + 课堂练习 + 嵌套/局部类</a></div>
+    <div>5. <a href="#code">配套代码逐段讲解</a></div>
+    <div>6. <a href="#check">第二阶段：查（覆盖自查）</a></div>
+    <div>7. <a href="#sup">第三阶段：补（注释代码 + 两大陷阱）</a></div>
+    <div>8. <a href="#test">第四阶段：测（4 道题，答案留空）</a></div>
+    <div>9. <a href="#tree">全章知识树</a></div>
+    <div>10. <a href="#cheat">速查表 + 易错点卡 + 口诀</a></div>
+  </div>
+</section>
+
+<section id="mech">
+  <h2>异常处理运行机制总览</h2>
+  <p>异常处理本质是一条<strong>控制权转移</strong>链路：错误检测点（throw）和处理点（catch）分离，中间由 try 划定保护范围。</p>
+  <div class="steps">
+    <div class="step"><b>1</b><span class="t">try 包住保护代码</span><div class="d">可能出错的调用放进 try 块，后跟一个或多个 catch</div></div>
+    <div class="step"><b>2</b><span class="t">throw 抛出异常</span><div class="d">异常类型 = 表达式类型，函数立即"返回"</div></div>
+    <div class="step"><b>3</b><span class="t">跳过 try 剩余语句</span><div class="d">一旦抛出，try 块后面的语句全部不执行</div></div>
+    <div class="step"><b>4</b><span class="t">catch 按序类型匹配</span><div class="d">逐个检查类型声明；都不匹配则程序终止</div></div>
+    <div class="step"><b>5</b><span class="t">程序继续正常流转</span><div class="d">catch 处理完从 try-catch 之后继续（mycode.cpp 的 cout&lt;&lt;1111 是证明行）</div></div>
+  </div>
+</section>
+
+<section id="m1">
+  <h2>模块一：异常处理概述 + 标准异常</h2>
+
+  <h3>1. 异常处理概述（P4-6）【了解】</h3>
+  <p>异常处理是 C++ 处理<strong>运行时错误</strong>的过程，让程序出错后仍能正常流转（P5-6）；三个关键字 try / catch / throw（P6）；不处理异常则打印异常消息并终止程序（P5）。P4 除0案例是全章入口，必须分清三种"除以0"：</p>
+  <table>
+    <tr><th>情况</th><th>结果</th><th>会抛 C++ 异常吗</th></tr>
+    <tr><td>整数除以0（int/int）</td><td>程序崩溃终止</td><td>否，硬件级错误，catch 不到</td></tr>
+    <tr><td>浮点除以0（double/double）</td><td>得 inf/nan 照常往下传（P10 案例）</td><td>否，静默产出错误值</td></tr>
+    <tr><td>代码主动 throw</td><td>抛出异常对象</td><td>是，这才是异常机制管的事</td></tr>
+  </table>
+  <div class="tip"><strong>结论</strong>：异常不会自动出现——错误要自己检测、自己 throw（P11 结论）。inf=infinity（Linux）等同 #INF（Windows）；nan=not a number 等同 #IND（Windows），一般由溢出或未定义浮点操作（如对 -1 开方）产生（P10 注释）。</div>
+  <div class="sum">人话总结：异常就是"出错时的紧急出口"。</div>
+
+  <h3>2. 标准异常（P7-8）【熟悉】</h3>
+  <p>全部派生自 <code>std::exception</code>，按父子层次组织，定义在 <code>&lt;exception&gt;</code> 头文件中：</p>
+<pre>std::exception（父类，提供 what() 方法）
+├── bad_alloc / bad_cast / bad_typeid / bad_exception
+├── logic_error 家族：domain_error / invalid_argument / length_error / out_of_range
+└── runtime_error 家族：range_error / overflow_error / underflow_error</pre>
+  <table>
+    <tr><th>异常</th><th>描述（P8）</th></tr>
+    <tr><td>std::exception</td><td>所有标准 C++ 异常的父类</td></tr>
+    <tr><td>std::bad_alloc</td><td>通过 new 抛出（内存分配失败）</td></tr>
+    <tr><td>std::bad_cast</td><td>通过 dynamic_cast 抛出</td></tr>
+    <tr><td>std::bad_typeid</td><td>通过 typeid 抛出</td></tr>
+    <tr><td>std::bad_exception</td><td>处理无法预期的异常时非常有用</td></tr>
+    <tr><td>std::logic_error</td><td>理论上读代码就能检测到的异常</td></tr>
+    <tr><td>std::domain_error</td><td>使用了无效的数学域</td></tr>
+    <tr><td>std::invalid_argument</td><td>使用了无效的参数</td></tr>
+    <tr><td>std::length_error</td><td>创建了太长的 std::string</td></tr>
+    <tr><td>std::out_of_range</td><td>越界访问，如 vector::at()、bitset</td></tr>
+    <tr><td>std::runtime_error</td><td>理论上读代码检测不到的异常</td></tr>
+    <tr><td>std::range_error</td><td>存储超出范围的值</td></tr>
+    <tr><td>std::overflow_error / underflow_error</td><td>数学上溢 / 下溢</td></tr>
+  </table>
+<pre class="code">#include &lt;exception&gt;   // 标准异常都在这个头文件里
+std::vector&lt;int&gt; v = {1, 2, 3};
+try { v.at(10); }                            // at() 会做越界检查
+catch (std::exception&amp; e) { /* e.what() */ } // 用父类引用接</pre>
+  <div class="sum">人话总结：现成的异常家族，记得 include exception。</div>
+</section>
+
+<section id="m2">
+  <h2>模块二：try/catch · throw · catch（三个重点）</h2>
+
+  <h3>3. try/catch 语句（P9-10）【重点】</h3>
+  <div class="grid2">
+    <div class="card"><strong>① 是什么</strong><br>try 块放可能出错的代码（称为<strong>保护代码</strong>），后跟一个或多个 catch 捕获处理（P9）。</div>
+    <div class="card"><strong>② 为什么</strong><br>P10 证明 <code>div(50,0)</code> 浮点除0不崩溃、输出 inf 照常往下传——错误值悄悄污染程序，必须用 try/catch 把错误引到处理点。</div>
+  </div>
+<pre>try {
+    double result1 = div(v1, v2);   // 保护代码
+    cout &lt;&lt; result1 &lt;&lt; endl;        // 上行若抛异常，本行跳过
+}
+catch (ExceptionName1 e1) { /* 处理类型1 */ }
+catch (ExceptionName2 e2) { /* 处理类型2 */ }
+catch (...)               { /* 万能兜底，只能放最后 */ }</pre>
+  <div class="trap"><strong>④ 注意</strong>：一个 try 可配多个 catch 按序匹配；try 块中一旦某语句抛异常，<strong>后续语句全部跳过</strong>。</div>
+  <div class="sum">人话总结：try 试一试，catch 接住处理。</div>
+
+  <h3>4. 抛出异常 throw（P11-13）【重点】</h3>
+  <div class="grid2">
+    <div class="card"><strong>① 是什么</strong><br><code>throw 表达式;</code> 在任何位置主动抛异常，<strong>表达式结果的类型决定异常类型</strong>（P12）。</div>
+    <div class="card"><strong>② 为什么</strong><br>div 函数内部最清楚"除数为0"，由它检测抛出，调用者决定怎么处理——错误发生点与处理点分离（P11）。</div>
+  </div>
+<pre>double div(double a, double b) {
+    if (b == 0) {
+        throw "Division by zero condition!";  // 抛出 const char* 类型
+    }
+    return (a / b);   // 抛出后这行不执行
+}</pre>
+  <p>配套代码同款：mycode.cpp 的 <code>mydiv</code> 在 v2==0 时 <code>throw "divsion by zero condition"</code>（比教材少感叹号、拼写少个 i）。</p>
+  <div class="trap"><strong>④ 注意（P13 核心教训）</strong>：只抛出、不捕获，程序无法正常运行结束——没人接异常就触发 terminate。</div>
+  <div class="sum">人话总结：想抛就抛，类型由表达式决定。</div>
+
+  <h3>5. 捕获异常 catch（P14-16）【重点】</h3>
+  <p>catch 跟在 try 后面，按括号里的<strong>异常声明</strong>指定捕获类型，按书写顺序逐一匹配（P14）。两种形式与教材控制台实录：</p>
+  <table>
+    <tr><th>形式</th><th>写法</th><th>输出（P15/P16）</th></tr>
+    <tr><td>万能捕获</td><td><code>catch(...)</code></td><td><code>出错了!</code> 然后 <code>50</code>（程序没死，add 照常执行）</td></tr>
+    <tr><td>类型捕获</td><td><code>catch(const char* msg)</code></td><td><code>Division by zero condition!</code> 然后 <code>50</code>（msg 接住抛出的字符串）</td></tr>
+  </table>
+<pre>try { double result1 = div(v1, v2); cout &lt;&lt; result1 &lt;&lt; endl; }
+catch (const char* msg) { cerr &lt;&lt; msg &lt;&lt; endl; }   // 与 throw 类型严格一致</pre>
+  <p class="muted">test01 中被注释的块就是这种写法，与 mydiv 抛出的 const char* 严格匹配。</p>
+  <div class="trap"><strong>④ 注意</strong>：catch 按顺序匹配，<strong>子类 catch 必须写在父类前面</strong>，否则被子类之前出现的父类截胡；catch(...) 只能垫底。</div>
+  <div class="sum">人话总结：按顺序匹配，子类放前面。</div>
+</section>
+
+<section id="m3">
+  <h2>模块三：自定义异常 + 课堂练习 + 嵌套类/局部类</h2>
+
+  <h3>6. 自定义异常（P17-18）【重点】</h3>
+  <div class="grid2">
+    <div class="card"><strong>① 是什么</strong><br>继承 <code>std::exception</code> 并重写 <code>what()</code> 的类，用类对象表达业务自定义错误。</div>
+    <div class="card"><strong>② 为什么</strong><br>throw 字符串只给一句话；自定义异常是<strong>类型</strong>，携带语义、可被精确 catch、可扩展错误码。what() 是 exception 提供的公共方法，返回异常原因。</div>
+  </div>
+<pre>class MyException : public exception {
+public:
+    const char* what() const throw() {  // 重写 what()；const throw() 承诺不抛异常
+        return "my test exception";
+    }
+};
+int add(int v1, int v2) {
+    if (v1 &gt; 0) { MyException myex; throw myex; }  // 抛自定义对象
+    return v1 + v2;
+}
+// main 中：
+try { cout &lt;&lt; add(100, 200) &lt;&lt; endl; }
+catch (exception&amp; e) { cout &lt;&lt; e.what() &lt;&lt; endl; }  // 父类引用接子类对象</pre>
+  <p>输出 <code>my test exception</code>。配套 MyExcption + add + test01 完全同构，test01 实际输出两行：<code>my test exception</code> 和 <code>1111</code>（后者证明异常处理完程序继续跑）。</p>
+  <div class="trap"><strong>④ 注意</strong>：捕获类异常必须用<strong>引用</strong> <code>catch(exception& e)</code>——防对象切片、保多态；const throw() 是老式异常规格（现代 C++ 用 noexcept），新手照抄即可。</div>
+  <div class="sum">人话总结：继承 exception，重写 what，说清错因。</div>
+
+  <h3>7. 课堂练习1：数组下标越界异常（P19-22）</h3>
+  <p><strong>思路三步</strong>：① 枚举当异常类型（异常不一定是类）→ ② 函数内两道边界检查越界就 throw → ③ catch 后按枚举值分支输出。</p>
+<pre>enum index { underflow, overflow };   // 0=下标太小, 1=下标太大
+int array_index(int* arr, int n, int index) {
+    if (index &lt; 0)   throw underflow;   // 下标太小
+    if (index &gt; n-1) throw overflow;    // 下标太大
+    return arr[index];                  // 合法下标正常取值
+}</pre>
+  <p>教材 P21 main 输出只有 <code>5</code> 和 <code>index underflow!</code>——第三个调用（idx=15）永远执行不到：idx=-1 抛异常后 try 块剩余语句全部跳过，且 exit(-1) 直接终止进程。想看 overflow 输出，得像配套 test02 那样把调用拆开分别测。</p>
+  <p>test02 当前输出 <code>13</code>（下标2合法取13）；放开 -2 行输出"下标太小了"；放开 100 行输出"下标太大了"；<strong>三行全放开只输出"下标太小了"</strong>。</p>
+  <div class="sum">人话总结：枚举当异常用，越界就抛。</div>
+
+  <h3>8. 嵌套类和局部类（P23-30）【熟悉】</h3>
+  <table>
+    <tr><th>维度</th><th>嵌套类</th><th>局部类</th></tr>
+    <tr><td>定义位置</td><td>类的内部</td><td>函数体内</td></tr>
+    <tr><td>可见范围</td><td>外围类作用域（外部用需 <code>OuterClass::Inner</code> 限定）</td><td>仅所在函数内</td></tr>
+    <tr><td>成员函数类外定义</td><td>可以（作用域链写全）</td><td>不可以，必须类内定义</td></tr>
+    <tr><td>静态成员</td><td>可以有</td><td>不能有</td></tr>
+    <tr><td>访问外围成员</td><td>不能访问外围类任何成员（反之亦然）</td><td>实践中很少使用</td></tr>
+  </table>
+<pre>class OuterClass {            // 外围类
+public:
+    class InnerClass {        // 嵌套类：语法上藏在外围类里
+    public:
+        void func();          // 可在类体外定义
+    };
+    InnerClass obj;           // 外围类持嵌套类对象作成员
+};
+void OuterClass::InnerClass::func() { /* 类外定义：作用域链写全 */ }
+
+void func() {                 // 局部类：定义在函数体内
+    class LocalClass {
+    public:
+        int num;
+        void setNum(int n) { num = n; }              // 必须类内定义
+        void showNum() { cout &lt;&lt; "num=" &lt;&lt; num &lt;&lt; endl; }
+    };
+    LocalClass lc; lc.setNum(111); lc.showNum();     // num=111
+}</pre>
+  <p>P28-30 案例输出（与 test03 一致）：</p>
+<pre>Outerclass func()      ← 外围类对象调用，内部又调了嵌套类对象
+InnerClass func()
+**********************
+InnerClass func()      ← OuterClass::InnerClass ic1; 作用域限定直接用
+**********************
+num = 111              ← 局部类演示</pre>
+  <p class="muted">嵌套类只是"语法上的嵌入"，没有访问特权；老版本编译器可能不支持该特性（P23）。用途：外围类用它做底层实现并对用户隐藏（如迭代器）。</p>
+  <div class="sum">人话总结：藏在类里/函数里的类，只是作用域把戏。</div>
+</section>
+
+<section id="code">
+  <h2>配套代码逐段讲解</h2>
+  <h3>mycode.h — 接口表</h3>
+  <p>5 个函数声明 = 异常三件套练习（mydiv / add / test01）+ 枚举越界（array_index / test02）+ 嵌套局部类（test03）；<code>#pragma once</code> 防重复包含，<code>#include &lt;exception&gt;</code> 是自定义异常的前提。</p>
+  <h3>Test002.cpp — 实验切换入口</h3>
+  <p>main 用注释切换三个实验（test01/test02/test03），当前放开 test03，输出即上面 7 行。设计意图：三个实验互不干扰。</p>
+  <h3>mycode.cpp — 十段精讲</h3>
+  <table>
+    <tr><th>行号</th><th>内容</th><th>要点</th></tr>
+    <tr><td>3-17</td><td>OuterClass + InnerClass</td><td>外围类持嵌套类对象 obj 作成员；外围类 func 先打印自己再调 obj.func()——"外围类通过对象访问嵌套类公有成员"</td></tr>
+    <tr><td>19-21</td><td>嵌套类类外定义</td><td>void OuterClass::InnerClass::func() —— 作用域链必须写全</td></tr>
+    <tr><td>23-37</td><td>全局 func() + 局部类 LocalClass</td><td>成员函数全在类体内（局部类硬性要求）；setNum(111) → 输出 num = 111</td></tr>
+    <tr><td>39-47</td><td>test03</td><td>三种用法依次演示：外围对象调用（两行）→ 作用域限定（一行）→ 局部类（num=111），星号分隔</td></tr>
+    <tr><td>49-56</td><td>enum index + array_index</td><td>两道边界检查 throw 枚举值；注意形参名 index 遮蔽枚举类型名（活的名字遮蔽例子），throw 的是枚举常量不受影响</td></tr>
+    <tr><td>57-69</td><td>test02</td><td>new 5元素数组填 11~15；try 三个调用（两个被注释）；catch(index e) 按值分支中文提示</td></tr>
+    <tr><td>71-76</td><td>MyExcption</td><td>继承 exception 重写 what()；源码拼写比教材少个 i，编译器不管拼写但抄写要一致</td></tr>
+    <tr><td>78-83</td><td>mydiv</td><td>v2==0 抛 const char*；与教材 P12 div 同构</td></tr>
+    <tr><td>85-92</td><td>add</td><td>v1&gt;0 时先定义局部对象再 throw（与教材写法一致）</td></tr>
+    <tr><td>93-107</td><td>test01</td><td>被注释的 mydiv try-catch（const char* 捕获演示）+ 在用的 add 捕获（exception&amp; 引用 + e.what()）；cout&lt;&lt;1111 是"程序还活着"证明行</td></tr>
+  </table>
+  <div class="tip"><strong>编码提醒</strong>：mycode.cpp 中文注释是 ANSI/GBK 编码，UTF-8 环境打开显示乱码但不影响 MSVC 编译；要用 UTF-8 保存需加 BOM 或设置 /utf-8 编译选项。</div>
+</section>
+
+<section id="check">
+  <h2>第二阶段：查（自查结论）</h2>
+  <table>
+    <tr><th>检查项</th><th>结果</th></tr>
+    <tr><td>页码覆盖</td><td>34页全覆盖：P4-6概述 / P7-8标准异常 / P9-16三重点 / P17-18自定义异常 / P19-22练习 / P23-30嵌套局部类 / P31总结 / P32-33作业 / P34模板预告 ✅</td></tr>
+    <tr><td>重点章节</td><td>try/catch、throw、catch、自定义异常——全部按黄金四步法展开并配输出 ✅</td></tr>
+    <tr><td>代码配齐</td><td>8个知识点全部有代码验证，教材每个案例都给出输出解读 ✅</td></tr>
+  </table>
+  <p class="muted">P2 为上一章"计算器项目"复习页，非本章知识点；P32-33 作业两题参考答案见 .md 笔记附录A。</p>
+</section>
+
+<section id="sup">
+  <h2>第三阶段：补（注释代码意图 + 两大陷阱）</h2>
+  <h3>被注释代码的统一设计意图</h3>
+  <p>教材/配套代码用注释"切换实验"，放开即看对应输出：</p>
+  <table>
+    <tr><th>位置</th><th>注释内容</th><th>放开后的效果</th></tr>
+    <tr><td>test01 第95-100行</td><td>mydiv 的 try-catch 块</td><td>mydiv(200,0) 抛 const char*，被 catch(const char* msg) 捕获，cerr 打印 <code>divsion by zero condition</code>，随后照旧输出 my test exception / 1111</td></tr>
+    <tr><td>test02 第57行</td><td>array_index(arr,5,-2)</td><td>-2&lt;0 抛 underflow → 输出"下标太小了"</td></tr>
+    <tr><td>test02 第58行</td><td>array_index(arr,5,100)</td><td>100&gt;4 抛 overflow → 输出"下标太大了"</td></tr>
+    <tr><td>Test002.cpp main</td><td>test01(); test02();</td><td>切换实验，分别得到三组输出</td></tr>
+  </table>
+  <div class="trap">test02 三行同时放开只有第一行(-2)生效——异常抛出后 try 块剩余语句全部跳过。这就是"一次实验只放开一行"的设计原因。</div>
+
+  <h3>陷阱一：catch 匹配顺序——子类必须在父类前</h3>
+<pre>try { throw MyEx(); }        // 抛子类对象
+catch (exception&amp;)  { cout &lt;&lt; "exception&amp;"; }  // 父类在前：截胡！实际输出这行
+catch (MyEx&amp;)       { cout &lt;&lt; "MyEx&amp;"; }        // 子类在后：永远不可达</pre>
+  <h3>陷阱二：throw 与 catch 类型必须严格一致（不隐式转换）</h3>
+<pre>try { throw "div by zero"; }           // const char*
+catch (exception&amp; e) { cout &lt;&lt; "A"; }  // 捕不到！char* 不是 exception
+catch (string s)     { cout &lt;&lt; "B"; }  // 也捕不到！不会自动转换
+catch (const char* m) { cout &lt;&lt; m; }   // 类型一致才接得住 → 输出 div by zero</pre>
+  <p>这正是 mycode.cpp 的现实：mydiv 抛 const char* 只能用 catch(const char*) 接；add 抛 MyExcption 对象只能用 exception&amp; 接。两个都写错 → 程序 terminate。</p>
+  <div class="tip"><strong>另附两个高频错误</strong>：① 整数除0不会抛 C++ 异常，直接崩溃，想用异常机制必须自己 if 检测后 throw；② catch(...) 写在最前面会吞掉所有异常——永远放最后。</div>
+</section>
+
+<section id="test">
+  <h2>第四阶段：测（4 道题，答案留空）</h2>
+  <p>先自己写，把答案贴回给教练批改后给标准答案。</p>
+
+  <div class="q"><span class="lv">难度 ★</span><strong>第1题 · 概念判断（对/错）</strong>
+    <p>1. try 块中的代码被称为"保护代码"。　（　）<br>
+       2. 一个 try 块后面只能跟一个 catch 块。　（　）<br>
+       3. throw 语句的操作数类型决定了抛出的异常类型。　（　）<br>
+       4. catch(...) 应该写在所有 catch 块的最前面，才能保证捕获所有异常。　（　）<br>
+       5. std::exception 类的 what() 方法用于返回异常的原因描述。　（　）</p>
+    <div class="blank">我的答案：1.　2.　3.　4.　5.</div>
+  </div>
+
+  <div class="q"><span class="lv">难度 ★★</span><strong>第2题 · 抛出与捕获</strong>
+    <p>编写函数 <code>double divide(int a, int b)</code>：b 为 0 时 <code>throw "divide by zero!"</code>，否则返回浮点结果。main 中用 divide(10,2) 和 divide(10,0) 验证，捕获后打印错误信息，且程序必须打印"程序结束"四字后正常结束。</p>
+    <div class="blank">在此写代码…</div>
+  </div>
+
+  <div class="q"><span class="lv">难度 ★★★</span><strong>第3题 · 自定义异常</strong>
+    <p>定义 <code>NegativeError</code> 继承 std::exception 并重写 what() 返回 <code>"numbers must be &gt;= 0"</code>；编写 <code>int multiply(int a, int b)</code>——a 或 b 小于 0 时抛 NegativeError 对象；main 对 multiply(3,4) 和 multiply(-3,4) 验证，用 catch(exception& e) 打印 e.what()。</p>
+    <div class="blank">在此写代码…</div>
+  </div>
+
+  <div class="q"><span class="lv">难度 ★★★★</span><strong>第4题 · 综合编程（数组越界 + 自定义异常 + 多 catch）</strong>
+    <p>实现 <code>int get_score(int* scores, int n, int idx)</code>：idx&lt;0 抛枚举 TooLow；idx&gt;=n 抛枚举 TooHigh；idx==3 抛自定义异常 AbsentStudent（what 返回 <code>"student 3 is absent"</code>）；正常返回 scores[idx]。main 用长度5的数组依次传 idx=2、3、-1、10，用三个 catch 分别接住。<br>
+    <strong>附加问</strong>：为什么 catch(AbsentStudent&) 必须写在 catch(...) 之前？如果把 catch(exception&) 写在 catch(AbsentStudent&) 前面会发生什么？</p>
+    <div class="blank">在此写代码…</div>
+  </div>
+</section>
+
+<section id="tree">
+  <h2>全章知识树</h2>
+<pre>C++ 异常处理
+├── 1. 概述【了解】：异常=运行时事件；try/catch/throw 三关键字；不处理→终止
+├── 2. 标准异常【熟悉】：exception 根 → bad_* / logic_error 家族 / runtime_error 家族
+├── 3. try/catch【重点】：保护代码；多 catch 按序匹配；抛出后剩余语句跳过
+├── 4. throw【重点】：类型=表达式类型；抛后函数立即返回；只抛不捕→终止
+├── 5. catch【重点】：子类在前父类在后；(...)垫底；类异常用引用接
+├── 6. 自定义异常【重点】：继承 exception + 重写 what()
+├── 7. 课堂练习：enum 当异常类型；&lt;0 underflow，&gt;n-1 overflow
+├── 8. 嵌套类/局部类【熟悉】：作用域把戏；嵌套类无访问特权；局部类函数必须类内定义
+└── 下节课：模板（P34）</pre>
+</section>
+
+<section id="cheat">
+  <h2>速查表 · 易错点卡 · 口诀</h2>
+  <h3>核心语法速查</h3>
+  <table>
+    <tr><th>知识点</th><th>语法</th><th>最小示例</th></tr>
+    <tr><td>try/catch</td><td>try{...} catch(类型 e){...}</td><td>try{ f(); } catch(int e){ }</td></tr>
+    <tr><td>多catch</td><td>多个 catch 依次排列</td><td>catch(int)/catch(const char*)/catch(...)</td></tr>
+    <tr><td>万能捕获</td><td>catch(...)</td><td>catch(...){ cout&lt;&lt;"err"; }</td></tr>
+    <tr><td>抛异常</td><td>throw 表达式;</td><td>throw "error"; throw 42; throw myex;</td></tr>
+    <tr><td>自定义异常</td><td>继承 exception + 重写 what</td><td>class E:public exception{ const char* what() const throw(){return "x";} };</td></tr>
+    <tr><td>引用捕获</td><td>catch(exception& e)</td><td>cout &lt;&lt; e.what();</td></tr>
+    <tr><td>枚举异常</td><td>enum Err{A,B}; throw A;</td><td>catch(Err e){ if(e==A)... }</td></tr>
+    <tr><td>嵌套类</td><td>class Outer{ class Inner{...}; };</td><td>Outer::Inner i; i.func();</td></tr>
+    <tr><td>局部类</td><td>void f(){ class L{...}; }</td><td>所有成员函数类内定义</td></tr>
+    <tr><td>标准异常头</td><td>#include &lt;exception&gt;</td><td>catch(std::out_of_range& e)</td></tr>
+  </table>
+
+  <h3>易错点速查（12条）</h3>
+  <table>
+    <tr><th>#</th><th>易错点</th><th>正确做法</th></tr>
+    <tr><td>1</td><td>子类 catch 放在父类 catch 后面</td><td>子类在前、父类在后</td></tr>
+    <tr><td>2</td><td>catch(...) 放在最前</td><td>永远放最后兜底</td></tr>
+    <tr><td>3</td><td>throw 与 catch 类型不一致</td><td>严格一致：const char* 配 const char*，类配引用</td></tr>
+    <tr><td>4</td><td>以为异常抛出后 try 后面的语句还会执行</td><td>不会，直接跳到 catch</td></tr>
+    <tr><td>5</td><td>以为整数除0会抛异常</td><td>int/int 除0直接崩溃，需自己 if 检测后 throw</td></tr>
+    <tr><td>6</td><td>以为浮点除0会抛异常</td><td>得 inf/nan 不抛；想抛自己写</td></tr>
+    <tr><td>7</td><td>值传递捕获类异常 catch(exception e)</td><td>用引用 catch(exception& e)，防切片保多态</td></tr>
+    <tr><td>8</td><td>忘记 #include &lt;exception&gt;</td><td>用 std::exception 前先包含</td></tr>
+    <tr><td>9</td><td>what() 签名抄错</td><td>const char* what() const throw() 照抄</td></tr>
+    <tr><td>10</td><td>嵌套类想访问外围类私有成员</td><td>不允许，嵌套类只是语法嵌入无特权</td></tr>
+    <tr><td>11</td><td>局部类成员函数写到类外</td><td>必须类内定义，且不能有静态成员</td></tr>
+    <tr><td>12</td><td>只 throw 不 catch</td><td>程序 terminate；每个 throw 都要有对应 catch</td></tr>
+  </table>
+
+  <h3>随身速记口诀（3条）</h3>
+  <div class="mnemos">
+    <div class="mnemo">try 围住危险代码，throw 一抛控制权转移，catch 按类型接力处理。<small>机制主线</small></div>
+    <div class="mnemo">子类在前，父类在后，三点(...)只能垫底。<small>匹配顺序</small></div>
+    <div class="mnemo">抛啥接啥要门当户对；自定义异常继承 exception、重写 what。<small>类型匹配</small></div>
+  </div>
+</section>
+
+<footer>来源：《21 异常处理》课件 34 页（OCR 逐页提取）+ mycode.h / mycode.cpp / Test002.cpp 逐行分析 · 笔记生成于 2026-08-27</footer>
+</div>
+</body>
+</html>

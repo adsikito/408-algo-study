@@ -1,0 +1,279 @@
+/* ============================================================================
+ * 53_笔记配色样式.css
+ * 学习笔记模块配色与排版片段（Obsidian CSS Snippet）
+ *
+ * 设计原则：颜色永不单独承载信息。
+ *   - 块级底色表达「内容类型」
+ *   - 行内文字色 + 字重表达「重要程度」
+ *   - 掌握状态用纯文字标签，不上色
+ *   - 打印样式（@media print）把颜色降级为字重与下划线，保证黑白可读
+ *
+ * 安装：
+ *   1. 复制到 <资料库>/.obsidian/snippets/53_笔记配色样式.css
+ *   2. Obsidian 设置 → 外观 → CSS 片段 → 刷新 → 打开开关
+ *
+ * 配套用法（写在笔记里）：
+ *   块级  > [!concept] 核心定义      > [!formula] 模板     > [!exercise] 例题
+ *         > [!mistake] 常见误区       > [!analogy] 通俗解释  > [!extra] 补充延伸
+ *   折叠  > [!analogy]- 通俗解释     （减号 = 默认折叠，用于主动回忆）
+ *   行内  <span class="lv0">必掌握内容</span>   lv0 / lv1 / lv2
+ * ========================================================================= */
+
+
+/* ---------------------------------------------------------------------------
+ * 一、阅读版心与排版参数
+ * ------------------------------------------------------------------------ */
+
+.markdown-preview-view,
+.markdown-source-view.mod-cm6 .cm-sizer {
+  --file-line-width: 750px;   /* 每行约 35-45 汉字，减少回扫 */
+  font-size: 16px;
+  line-height: 1.75;          /* 中文需要比英文更大的行距 */
+}
+
+.markdown-preview-view p,
+.markdown-source-view.mod-cm6 .cm-line {
+  margin-block: 0.45em;       /* 段落间距 0.9em */
+}
+
+/* 代码块字号与正文区分 */
+.markdown-preview-view pre code,
+.markdown-source-view.mod-cm6 .cm-line.HyperMD-codeblock {
+  font-size: 14px;
+}
+
+/* 标题与上一段留白，便于分节扫读 */
+.markdown-preview-view h2 { margin-top: 1.8em; }
+.markdown-preview-view h3 { margin-top: 1.4em; }
+
+
+/* ---------------------------------------------------------------------------
+ * 二、块级色块：六个 Callout 类型（表达内容类型）
+ *   写法：  > [!concept] 标题
+ * ------------------------------------------------------------------------ */
+
+.callout {
+  --callout-border-width: 0 0 0 4px;   /* 只留左侧色条，色条是主要识别信号 */
+  --callout-border-opacity: 1;
+  --callout-radius: 4px;
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin-block: 1em;
+}
+
+/* 淡化标题栏，避免色块内部再分层次 */
+.callout .callout-title {
+  padding: 0 0 4px 0;
+  background: transparent;
+  font-weight: 600;
+}
+
+.callout .callout-content { background: transparent; }
+.callout .callout-content > :first-child { margin-top: 0; }
+.callout .callout-content > :last-child { margin-bottom: 0; }
+
+/* --- 1. 核心定义与概念（蓝） ---------------------------------------------- */
+.callout[data-callout="concept"] {
+  --callout-color: 46, 117, 182;
+  --callout-icon: lucide-book-open;
+  background-color: #EAF2FB;
+}
+.theme-dark .callout[data-callout="concept"] { background-color: #1B2A3A; }
+
+/* --- 2. 模板与公式（紫） -------------------------------------------------- */
+.callout[data-callout="formula"] {
+  --callout-color: 112, 48, 160;
+  --callout-icon: lucide-sigma;
+  background-color: #F3EAFB;
+}
+.theme-dark .callout[data-callout="formula"] { background-color: #2A1B3A; }
+
+/* --- 3. 例题与自测（绿） -------------------------------------------------- */
+.callout[data-callout="exercise"] {
+  --callout-color: 46, 125, 50;
+  --callout-icon: lucide-pencil;
+  background-color: #EAF7EC;
+}
+.theme-dark .callout[data-callout="exercise"] { background-color: #16281A; }
+
+/* --- 4. 易错与陷阱（红） -------------------------------------------------- */
+.callout[data-callout="mistake"] {
+  --callout-color: 192, 57, 43;
+  --callout-icon: lucide-alert-triangle;
+  background-color: #FDECEA;
+}
+.theme-dark .callout[data-callout="mistake"] { background-color: #2E1A1A; }
+
+/* --- 5. 通俗解释与类比（青） ---------------------------------------------- */
+.callout[data-callout="analogy"] {
+  --callout-color: 0, 131, 143;
+  --callout-icon: lucide-lightbulb;
+  background-color: #E6F4F5;
+}
+.theme-dark .callout[data-callout="analogy"] { background-color: #14282A; }
+
+/* --- 6. 补充与延伸（灰） -------------------------------------------------- */
+.callout[data-callout="extra"] {
+  --callout-color: 122, 130, 138;
+  --callout-icon: lucide-plus-circle;
+  background-color: #F4F5F7;
+}
+.theme-dark .callout[data-callout="extra"] { background-color: #20242A; }
+
+/* --- 内置类型别名：不习惯自定义名时可改用内置 Callout ---------------------- */
+.callout[data-callout="note"]     { background-color: #EAF2FB; }
+.callout[data-callout="abstract"] { background-color: #F3EAFB; }
+.callout[data-callout="example"]  { background-color: #EAF7EC; }
+.callout[data-callout="warning"]  { background-color: #FDECEA; }
+.callout[data-callout="tip"]      { background-color: #E6F4F5; }
+.callout[data-callout="info"]     { background-color: #F4F5F7; }
+
+.theme-dark .callout[data-callout="note"]     { background-color: #1B2A3A; }
+.theme-dark .callout[data-callout="abstract"] { background-color: #2A1B3A; }
+.theme-dark .callout[data-callout="example"]  { background-color: #16281A; }
+.theme-dark .callout[data-callout="warning"]  { background-color: #2E1A1A; }
+.theme-dark .callout[data-callout="tip"]      { background-color: #14282A; }
+.theme-dark .callout[data-callout="info"]     { background-color: #20242A; }
+
+
+/* ---------------------------------------------------------------------------
+ * 三、行内标记：三级重要程度（表达重要程度）
+ *   写法：  <span class="lv0">顺序表的随机访问是 O(1)</span>
+ *
+ *   颜色 + 字重 双重编码。即使颜色失效，字重仍可区分 P0 与 P1。
+ * ------------------------------------------------------------------------ */
+
+.lv0, .p0 {                       /* 必掌握 */
+  color: #C0392B;
+  font-weight: 700;
+}
+.lv1, .p1 {                       /* 需熟练 */
+  color: #B9770E;
+  font-weight: 600;
+}
+.lv2, .p2 {                       /* 了解即可 */
+  color: #70757A;
+  font-weight: 400;
+}
+
+.theme-dark .lv0, .theme-dark .p0 { color: #FF7B72; }
+.theme-dark .lv1, .theme-dark .p1 { color: #E3B341; }
+.theme-dark .lv2, .theme-dark .p2 { color: #8B949E; }
+
+/* 术语首次出现时统一样式，避免手动加粗造成样式漂移 */
+.term {
+  font-weight: 600;
+  border-bottom: 1px dashed var(--text-faint);
+}
+
+
+/* ---------------------------------------------------------------------------
+ * 四、掌握状态标签：纯文字，刻意不上色
+ *   写法：  <span class="st">[未学]</span>
+ *
+ *   说明：掌握状态变化最频繁，若带颜色会导致全篇配色频繁变动，
+ *   破坏「颜色 = 稳定语义」的认知，故一律使用中性样式。
+ * ------------------------------------------------------------------------ */
+
+.st {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  background: var(--background-modifier-border);
+  border-radius: 3px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+/* 表格中的等宽呈现 */
+.markdown-preview-view table .st { font-size: 0.85em; }
+
+
+/* ---------------------------------------------------------------------------
+ * 五、速览表与关联表：降低表格视觉重量
+ * ------------------------------------------------------------------------ */
+
+.markdown-preview-view table {
+  font-size: 0.95em;
+  border-collapse: collapse;
+}
+
+.markdown-preview-view th {
+  background: var(--background-secondary);
+  font-weight: 600;
+}
+
+.markdown-preview-view td,
+.markdown-preview-view th {
+  padding: 6px 10px;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * 六、打印样式：颜色的最终兜底
+ *
+ *   若不做这一步，黑白打印稿会丢失全部重要程度信息。
+ *   策略：底色全去掉，P0 保留加粗、P1 转下划线、P2 常规。
+ * ------------------------------------------------------------------------ */
+
+@media print {
+
+  /* 版面 */
+  .markdown-preview-view {
+    --file-line-width: 100%;
+    font-size: 11pt;
+    line-height: 1.6;
+  }
+
+  /* 去掉全部底色，只留灰色左条 */
+  .callout {
+    background-color: #FFFFFF !important;
+    border-left: 3px solid #8A8A8A !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  /* 重要程度降级为字重与下划线 */
+  .lv0, .p0 { color: #000 !important; font-weight: 700 !important; }
+  .lv1, .p1 { color: #000 !important; font-weight: 600 !important;
+              text-decoration: underline; }
+  .lv2, .p2 { color: #000 !important; font-weight: 400 !important;
+              text-decoration: none; }
+
+  /* 掌握状态标签保留文字 */
+  .st {
+    background: transparent !important;
+    border: 1px solid #999 !important;
+    color: #000 !important;
+  }
+
+  /* 折叠内容全部展开——打印件里的折叠没有意义 */
+  details, details > summary ~ * { display: block !important; }
+  .callout.is-collapsed .callout-content { display: block !important; }
+
+  /* 标题不与正文分离 */
+  h1, h2, h3 { break-after: avoid; }
+
+  /* 隐藏交互元素 */
+  .callout-fold, .collapse-indicator { display: none !important; }
+}
+
+
+/* ---------------------------------------------------------------------------
+ * 七、可选：图例速查块
+ *   写法：  > [!legend] 图例
+ *
+ *   若不想每次手写图例，可把图例写进 Obsidian 模板插件里自动插入。
+ * ------------------------------------------------------------------------ */
+
+.callout[data-callout="legend"] {
+  --callout-color: 90, 96, 104;
+  --callout-icon: lucide-list;
+  background-color: #FAFAFB;
+  font-size: 0.9em;
+}
+.theme-dark .callout[data-callout="legend"] { background-color: #1E2126; }
+
+/* 图例在打印时保留（它是解读其余内容的钥匙） */
+@media print {
+  .callout[data-callout="legend"] { border-left: 3px solid #000 !important; }
+}
