@@ -41,6 +41,10 @@ import re
 import sys
 from pathlib import Path
 
+# 工程根：本脚本固定位于 <工程根>/50_工具与模板/ 下，故取上两级。
+# 用它把任意 target 转成「相对工程根」的路径，保证单目录检查与全库检查口径一致。
+ROOT = Path(__file__).resolve().parent.parent
+
 # ---------------------------------------------------------------------------
 # 检查规则
 # ---------------------------------------------------------------------------
@@ -246,20 +250,52 @@ def strip_platform_syntax(text: str) -> str:
     return "\n".join(out) + "\n"
 
 
+# ── 扫描范围的判定（2026-09-14 原则化）────────────────────────────────
+# 原则：**只扫自撰笔记；原样复制的课程方文件一律跳过。**
+#
+# 判据（主 + 兜底）：
+#   主判据 —— 文件名。素材复制时保留了课程方的原始命名「学习笔记.md」，
+#             而自撰笔记一律命名为「NN_主题.md」「README_*.md」「_MOC_*.md」「附录*.md」。
+#             因此**文件名为「学习笔记.md」即为逐字副本**，与所在层级无关。
+#   兜底 —— 路径深度。防止课程方原件中夹带其他 .md 文件名而漏排。
+#             自撰笔记的层级：考研为 3 段、算法专题为 4 段；副本则更深。
+#
+# 为什么不再用「纯路径深度」判定：深度阈值只要差 1，就会把自撰笔记整批误排除，
+# 而检查结果仍显示「0 问题」——**形成虚假绿灯**，比不检查更危险。
+COPY_ROOT_PREFIXES = ("03_常规课程/C++课程资料/",)
+COPY_FILENAMES = ("学习笔记.md",)
+_SELF_LAYER_MAX = {
+    "01_考研/408数据结构/": 3,      # 自撰笔记恰为 3 段
+    "02_竞赛/01_算法专题/": 4,      # 自撰笔记恰为 4 段（阶段N/NN_主题.md）
+}
+
+
+def is_verbatim_copy(rel: str) -> bool:
+    """判断是否为原样复制的课程方文件（逐字副本）。"""
+    if rel.startswith(COPY_ROOT_PREFIXES):
+        return True
+    parts = rel.split("/")
+    if parts[-1] in COPY_FILENAMES:
+        return True
+    for prefix, max_depth in _SELF_LAYER_MAX.items():
+        if rel.startswith(prefix) and len(parts) > max_depth:
+            return True
+    return False
+
+
 def collect_files(target: Path):
     if target.is_file():
         return [target]
-    # 原样复制的课程方文件（2026-09-13 素材复制）不适用本工程排版规范，跳过扫描：
-    # 只扫自撰笔记；逐字副本（素材章/课程资料）一律跳过
-    files = sorted(p for p in target.rglob("*.md") if p.is_file())
     out = []
-    for p in files:
-        rel = p.as_posix()
-        if rel.startswith("03_常规课程/C++课程资料/"):
+    for p in sorted(target.rglob("*.md")):
+        if not p.is_file():
             continue
-        if rel.startswith("02_竞赛/01_算法专题/") and len(rel.split("/")) > 3:
-            continue
-        if rel.startswith("01_考研/408数据结构/") and len(rel.split("/")) > 2:
+        # 相对路径要相对「工程根」而不是相对 target，否则单目录检查时层级会算错
+        try:
+            rel = p.relative_to(ROOT).as_posix()
+        except ValueError:
+            rel = p.as_posix()
+        if is_verbatim_copy(rel):
             continue
         out.append(p)
     return out
