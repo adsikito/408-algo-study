@@ -1239,20 +1239,30 @@ D-5 reverse / fill / min / max ──┬── D-6 max_element / count / find
       练习分散在算法专题阶段 1（二分、离散化、LIS）、阶段 7（状压 DP）的题集中。
 
 ---
-## 配套题库练习
+## 配套练习题
 
-| 题号 | 题名 | 状态 |
-|------|------|------|
-| luogu-P1177 | 排序 | 未做 |
-| luogu-P2249 | 查找 | 未做 |
-| luogu-P1059 | 明明的随机数 | 未做 |
-| luogu-P1706 | 全排列问题 | 未做 |
-| luogu-P1012 | 拼数（自定义比较器） | 未做 |
-| luogu-P1923 | 求第 k 小的数（nth_element） | 未做 |
-| luogu-P1047 | 校门外的树（fill / 差分标记） | 未做 |
-| luogu-P5718 | 找最小值（min_element） | 未做 |
+| 编号 | 题名 | 难度 | 类型 | 来源 | 链接 |
+|------|------|------|------|------|------|
+| T1 | [NOIP 2005 普及组] 校门外的树 | 【入门】 | `reverse` / `fill` / `swap` / `min` / `max` | 洛谷 P1047 | https://www.luogu.com.cn/problem/P1047 |
+| T2 | 【模板】排序 | 【入门】 | `sort` 与比较规则 | 洛谷 P1177 | https://www.luogu.com.cn/problem/P1177 |
+| T3 | 【深基13.例1】查找 | 【入门】 | `lower_bound` / `upper_bound` | 洛谷 P2249 | https://www.luogu.com.cn/problem/P2249 |
+| T4 | [NOIP 2007 普及组] 奖学金 | 【入门】 | 比较器的三种写法 | 洛谷 P1093 | https://www.luogu.com.cn/problem/P1093 |
+| T5 | [NOIP 2006 普及组] 明明的随机数 | 【入门】 | `unique` + `erase` 去重 | 洛谷 P1059 | https://www.luogu.com.cn/problem/P1059 |
+| T6 | 全排列问题 | 【入门】 | `next_permutation` / `prev_permutation` | 洛谷 P1706 | https://www.luogu.com.cn/problem/P1706 |
 
-> 题面链接见 `_题库总表.md`（单一真源，此处只列题号）；做题后回总表更新状态，「已通过」须在 `03_题库` 的 `代码` 目录留存代码文件。
+### 题目类型覆盖说明
+
+| 类型 | 覆盖题目 | 说明 |
+|------|---------|------|
+| `reverse` / `fill` / `swap` / `min` / `max` | T1 | 见各题题名中的考点标注 |
+| `sort` 与比较规则 | T2 | 见各题题名中的考点标注 |
+| `lower_bound` / `upper_bound` | T3 | 见各题题名中的考点标注 |
+| 比较器的三种写法 | T4 | 见各题题名中的考点标注 |
+| `unique` + `erase` 去重 | T5 | 见各题题名中的考点标注 |
+| `next_permutation` / `prev_permutation` | T6 | 见各题题名中的考点标注 |
+
+> **【说明】** 题目元数据（题号 / 链接 / 知识点 / 状态）的唯一真源是 `03_题库\_题库总表.md`，本表只做**呈现**，不复制题面。
+> 难度按本工程口径：`【入门】`= 套模板即可通过；`【进阶】`= 需转化或综合。
 
 ---
 
